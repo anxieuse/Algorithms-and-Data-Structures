@@ -13,7 +13,7 @@ static inline int GetBit(char *key, int bit)
 {
     if (bit < 0)
         bit = 0;
-    return ((key[bit / 8] - 'a') >> (7 - (bit % 8))) & 1;
+    return (key[bit / 8] >> (7 - (bit % 8))) & 1;
 }
 
 static inline int FirstDifBit(char *a, char *b)
