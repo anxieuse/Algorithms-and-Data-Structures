@@ -10,7 +10,6 @@ struct TTrie
     TTrie()
     {
         root = new TNode();
-        root->key = nullptr;
         size = 0;
     }
 
