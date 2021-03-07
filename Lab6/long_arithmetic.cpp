@@ -1,3 +1,4 @@
+#include <complex>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -10,9 +11,11 @@ enum TBigInt_exception {
     EXPONENTIATION_TO_ZERO
 };
 
+const int BASE = 1e5;
+const int RADIX_LEN = 5;
+
 struct TBigInt {
-    static const int BASE = 1000 * 1000 * 1000;
-    static const int RADIX_LEN = 9;
+    std::vector<int> digits;
 
     TBigInt() = default;
     explicit TBigInt(const std::string &num_string) {
@@ -21,19 +24,19 @@ struct TBigInt {
 
     void Initialize(const std::string &num_string) {
         this->digits.clear();
-        int num_len = static_cast<int>(num_string.size());
+        int num_len = num_string.size();
         for (int radix_end = num_len - 1; radix_end >= 0; radix_end -= RADIX_LEN) {
             if (radix_end >= RADIX_LEN - 1) {
-                digits.emplace_back(std::stoi(num_string.substr(radix_end - RADIX_LEN + 1, RADIX_LEN)));
+                digits.emplace_back(std::stoll(num_string.substr(radix_end - RADIX_LEN + 1, RADIX_LEN)));
             } else {
-                digits.emplace_back(std::stoi(num_string.substr(0, radix_end + 1)));
+                digits.emplace_back(std::stoll(num_string.substr(0, radix_end + 1)));
             }
         }
         this->RemoveLeadingZeros();
     }
 
     friend std::ostream &operator<<(std::ostream &out, const TBigInt &rhs) {
-        int num_len = static_cast<int>(rhs.digits.size());
+        int num_len = rhs.digits.size();
         out << rhs.digits.back();
         for (int radix = num_len - 2; radix >= 0; --radix) {
             out << std::setfill('0') << std::setw(RADIX_LEN) << rhs.digits[radix];
@@ -49,8 +52,8 @@ struct TBigInt {
     }
 
     int Compare(const TBigInt &rhs) const {
-        int n = static_cast<int>(this->digits.size());
-        int m = static_cast<int>(rhs.digits.size());
+        int n = this->digits.size();
+        int m = rhs.digits.size();
 
         if (n < m) {
             return -1;
@@ -118,8 +121,8 @@ struct TBigInt {
     }
 
     TBigInt operator*=(const TBigInt &rhs) {
-        int n = static_cast<int>(this->digits.size());
-        int m = static_cast<int>(rhs.digits.size());
+        int n = this->digits.size();
+        int m = rhs.digits.size();
         std::vector<int> res(n + m, 0);
         int carry;
         for (int i = 0; i < n; ++i) {
@@ -161,7 +164,7 @@ struct TBigInt {
             return *this;
         }
 
-        int n = static_cast<int>(this->digits.size());
+        int n = this->digits.size();
         int quotient;
         TBigInt current;
         std::vector<int> res;
@@ -192,12 +195,12 @@ struct TBigInt {
             throw TBigInt_exception(SUBTRACTION_ERROR);
         }
 
-        int n = static_cast<int>(this->digits.size());
+        int n = this->digits.size();
         int carry = 0;
         for (int i = n - 1; i >= 0; --i) {
             long long cur = this->digits[i] + 1ll * carry * BASE;
-            this->digits[i] = static_cast<int>(cur / rhs);
-            carry = static_cast<int>(cur % rhs);
+            this->digits[i] = cur / rhs;
+            carry = cur % rhs;
         }
         this->RemoveLeadingZeros();
         return *this;
@@ -211,25 +214,6 @@ struct TBigInt {
         *this = TBigInt("1");
         while (!(power.digits.size() == 1 && power.digits[0] == 0)) {
             if (power.digits[0] % 2 == 0) {
-                base *= base;
-                power /= 2;
-            } else {
-                *this *= base;
-                --power;
-            }
-        }
-        this->RemoveLeadingZeros();
-        return *this;
-    }
-
-    TBigInt operator^=(int power) {
-        if ((this->digits.size() == 1 && this->digits[0] == 0) and power == 0) {
-            throw TBigInt_exception(EXPONENTIATION_TO_ZERO);
-        }
-        TBigInt base = *this;
-        *this = TBigInt("1");
-        while (power > 0) {
-            if (power % 2 == 0) {
                 base *= base;
                 power /= 2;
             } else {
@@ -276,12 +260,6 @@ struct TBigInt {
         return copy;
     }
 
-    TBigInt operator^(const int &rhs) const {
-        TBigInt copy = *this;
-        copy ^= rhs;
-        return copy;
-    }
-
     TBigInt operator/(const TBigInt &rhs) const {
         TBigInt copy = *this;
         copy /= rhs;
@@ -310,8 +288,6 @@ struct TBigInt {
             this->digits.pop_back();
         }
     }
-
-    std::vector<int> digits;
 };
 
 int main() {
@@ -322,10 +298,9 @@ int main() {
         std::cin >> BigNumber1 >> BigNumber2 >> operation;
         if (std::cin.eof())
             break;
-
-        if (operation == '+')
+        if (operation == '+') {
             std::cout << BigNumber1 + BigNumber2 << '\n';
-        else if (operation == '=') {
+        } else if (operation == '=') {
             if (BigNumber1 == BigNumber2)
                 std::cout << "true" << '\n';
             else
