@@ -3,9 +3,7 @@
 ### Тестирование (сравнение ответов и времени исполнения с алгоритмом Дейкстры):
 
 ```bash
-$ g++ -O3 main.cpp -o main
 $ cd ./testing
-$ g++ -O3 dijk.cpp -o dijk
 $ chmod +rwx test.sh
-$ ./test.sh
+$ ./test.sh -c [to compile gen, dijk and main]
 ```
